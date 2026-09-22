@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans, Syne } from "next/font/google";
+import { DM_Sans, JetBrains_Mono, Syne } from "next/font/google";
 import { SmoothScroll } from "@/components/layout/SmoothScroll";
 import { SITE } from "@/lib/constants";
 import "./globals.css";
@@ -16,6 +16,15 @@ const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   display: "swap",
   weight: ["400", "500", "600", "700"],
+});
+
+// Powers the hero code cards. Mono only ever renders at 12-14px, so 400/500
+// is all the weight range it needs.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -58,7 +67,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
+    <html
+      lang="en"
+      className={`${syne.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="min-h-screen bg-ink font-sans text-chalk antialiased">
         <a
           href="#main"

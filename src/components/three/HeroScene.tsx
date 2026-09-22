@@ -1,71 +1,28 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshDistortMaterial, Sphere } from "@react-three/drei";
 import { Suspense, useMemo, useRef } from "react";
-import type { Group, Mesh } from "three";
+import type { MotionValue } from "framer-motion";
+import type { LineSegments } from "three";
 import { useIsMobile, usePrefersReducedMotion } from "@/hooks/useMedia";
 
-type Pointer = { x: number; y: number };
+/**
+ * Hero backdrop. The code cards used to live in here as WebGL slabs; they are
+ * plain DOM now (see `@/components/ui/CodeCardStack`), so all this scene owns
+ * is the perspective grid behind them.
+ *
+ * The grid material is unlit, so the scene needs no lights at all.
+ */
 
-function DistortedOrb({
-  pointer,
+function GridFloor({
+  progress,
   reduced,
 }: {
-  pointer: Pointer;
+  progress: MotionValue<number>;
   reduced: boolean;
 }) {
-  const mesh = useRef<Mesh>(null);
-  const group = useRef<Group>(null);
+  const mesh = useRef<LineSegments>(null);
 
-  useFrame((state) => {
-    if (!mesh.current || !group.current) return;
-
-    if (!reduced) {
-      mesh.current.rotation.x = state.clock.elapsedTime * 0.12;
-      mesh.current.rotation.y = state.clock.elapsedTime * 0.18;
-      group.current.rotation.x +=
-        (pointer.y * 0.35 - group.current.rotation.x) * 0.05;
-      group.current.rotation.y +=
-        (pointer.x * 0.45 - group.current.rotation.y) * 0.05;
-    }
-  });
-
-  return (
-    <group ref={group}>
-      <Float
-        speed={reduced ? 0 : 1.4}
-        rotationIntensity={reduced ? 0 : 0.35}
-        floatIntensity={reduced ? 0 : 0.6}
-      >
-        <Sphere ref={mesh} args={[1.15, 64, 64]} scale={1.05}>
-          <MeshDistortMaterial
-            color="#E44532"
-            attach="material"
-            distort={reduced ? 0.15 : 0.42}
-            speed={reduced ? 0.4 : 1.6}
-            roughness={0.32}
-            metalness={0.42}
-            emissive="#E44532"
-            emissiveIntensity={0.12}
-          />
-        </Sphere>
-        <WireRing />
-      </Float>
-    </group>
-  );
-}
-
-function WireRing() {
-  return (
-    <mesh rotation={[Math.PI / 2.4, 0.3, 0.2]} scale={1.55}>
-      <torusGeometry args={[1, 0.008, 16, 120]} />
-      <meshBasicMaterial color="#1A1714" transparent opacity={0.28} />
-    </mesh>
-  );
-}
-
-function GridFloor() {
   const points = useMemo(() => {
     const pts: number[] = [];
     const size = 8;
@@ -77,8 +34,15 @@ function GridFloor() {
     return new Float32Array(pts);
   }, []);
 
+  useFrame(() => {
+    const node = mesh.current;
+    if (!node || reduced) return;
+    // Read straight off the MotionValue - no React state, no re-render.
+    node.position.y = -1.7 + progress.get() * 0.9;
+  });
+
   return (
-    <lineSegments position={[0, -1.7, 0]} rotation={[0.12, 0, 0]}>
+    <lineSegments ref={mesh} position={[0, -1.7, 0]} rotation={[0.12, 0, 0]}>
       <bufferGeometry>
         <bufferAttribute
           attach="attributes-position"
@@ -87,51 +51,23 @@ function GridFloor() {
           itemSize={3}
         />
       </bufferGeometry>
-      <lineBasicMaterial color="#1A1714" transparent opacity={0.14} />
+      <lineBasicMaterial color="#1A1714" transparent opacity={0.12} />
     </lineSegments>
   );
 }
 
 type HeroSceneProps = {
-  pointer: Pointer;
-  scrollProgress: number;
+  /** 0 at the top of the hero, 1 once it has scrolled out. */
+  progress: MotionValue<number>;
 };
 
-function SceneContents({ pointer, scrollProgress, reduced }: HeroSceneProps & { reduced: boolean }) {
-  const root = useRef<Group>(null);
-
-  useFrame(() => {
-    if (!root.current || reduced) return;
-    root.current.position.y = scrollProgress * -0.85;
-    root.current.rotation.z = scrollProgress * 0.35;
-    root.current.scale.setScalar(1 - scrollProgress * 0.18);
-  });
-
-  return (
-    <group ref={root}>
-      <ambientLight intensity={0.7} />
-      <directionalLight position={[4, 6, 2]} intensity={1.15} color="#FFF6F0" />
-      <pointLight position={[-3, 1, 2]} intensity={1.15} color="#E44532" />
-      <DistortedOrb pointer={pointer} reduced={reduced} />
-      <GridFloor />
-    </group>
-  );
-}
-
-export function HeroScene({ pointer, scrollProgress }: HeroSceneProps) {
+export function HeroScene({ progress }: HeroSceneProps) {
   const reduced = usePrefersReducedMotion();
   const isMobile = useIsMobile();
 
+  // No WebGL on phones - the gradient alone carries the backdrop there.
   if (isMobile) {
-    return (
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-mesh-hero"
-      >
-        <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-coral/25 blur-3xl" />
-        <div className="absolute left-[40%] top-[45%] h-28 w-28 -translate-x-1/2 -translate-y-1/2 rounded-full border border-chalk/15" />
-      </div>
-    );
+    return <div aria-hidden className="absolute inset-0 bg-mesh-hero" />;
   }
 
   return (
@@ -143,11 +79,7 @@ export function HeroScene({ pointer, scrollProgress }: HeroSceneProps) {
         style={{ background: "transparent", pointerEvents: "none" }}
       >
         <Suspense fallback={null}>
-          <SceneContents
-            pointer={pointer}
-            scrollProgress={scrollProgress}
-            reduced={reduced}
-          />
+          <GridFloor progress={progress} reduced={reduced} />
         </Suspense>
       </Canvas>
     </div>

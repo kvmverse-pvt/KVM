@@ -27,10 +27,29 @@ const config: Config = {
           deep: "#C43524",
           glow: "rgba(228, 69, 50, 0.28)",
         },
+        // Near-black editor chrome for the hero code cards. Deliberately warm
+        // so it sits with the ink/coral palette instead of reading as pure #000.
+        panel: "#16130F",
+        // Syntax palette for the code cards. Only ever used on `panel`.
+        code: {
+          keyword: "#FF7A66",
+          string: "#E8C39E",
+          fn: "#F2EDE8",
+          plain: "#C9C1B8",
+          muted: "rgba(255, 255, 255, 0.45)",
+        },
       },
       fontFamily: {
         display: ["var(--font-syne)", "system-ui", "sans-serif"],
         sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        mono: [
+          "var(--font-jetbrains-mono)",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "Consolas",
+          "monospace",
+        ],
       },
       fontSize: {
         "display-xl": [
@@ -52,6 +71,7 @@ const config: Config = {
       boxShadow: {
         glow: "0 18px 50px -20px rgba(228, 69, 50, 0.45)",
         card: "0 18px 40px -24px rgba(26, 23, 20, 0.16)",
+        panel: "0 30px 60px -20px rgba(26, 23, 20, 0.35)",
       },
       backgroundImage: {
         "mesh-hero":

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KVMverse — Process section preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #F4F1EB;
+    --ink-50: #EBE6DD;
+    --ink-200: #DDD6CB;
+    --chalk: #1A1714;
+    --chalk-muted: #5A554E;
+    --coral: #E44532;
+    --stage: #0a0a0c;
+    --stage-text: #F4F1EB;
+    --stage-dim: #6f6a63;
+    --display: "Syne", "Arial Black", system-ui, sans-serif;
+    --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* The KVMverse site is brand-fixed light; the stage is brand-fixed dark. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --ink: #F4F1EB; --chalk: #1A1714; }
+  }
+  :root[data-theme="dark"] { --ink: #F4F1EB; --chalk: #1A1714; }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0; background: var(--ink); color: var(--chalk);
+    font-family: var(--sans); -webkit-font-smoothing: antialiased; overflow-x: clip;
+  }
+
+  /* ---------- cream context sections ---------- */
+  .wrap { max-width: 100rem; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 3rem); }
+  .nav { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 0; }
+  .brand { font-family: var(--display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; }
+  .brand b { color: var(--coral); }
+  .nav small { color: var(--chalk-muted); font-size: .85rem; }
+  .ctx { padding: clamp(5rem, 12vh, 8rem) 0; border-top: 1px solid var(--ink-200); }
+  .eyebrow { margin: 0 0 1rem; font-size: .75rem; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--coral); }
+  .h2 { margin: 0; font-family: var(--display); font-weight: 600; font-size: clamp(1.75rem, 3.5vw, 2.75rem); line-height: 1.1; letter-spacing: -0.03em; max-width: 20ch; }
+  .lede { margin: 1.25rem 0 0; color: var(--chalk-muted); font-size: 1.05rem; line-height: 1.6; max-width: 52ch; }
+  .hint { margin-top: 2.5rem; display: inline-flex; gap: .6rem; align-items: center; font-size: .9rem; color: var(--chalk-muted); }
+  .hint i { width: 1px; height: 28px; background: var(--coral); display: inline-block; animation: drip 1.6s ease-in-out infinite; transform-origin: top; }
+  @keyframes drip { 0%{transform:scaleY(0)} 50%{transform:scaleY(1)} 100%{transform:scaleY(0); transform-origin: bottom} }
+
+  /* ---------- the Work exhibition ---------- */
+  #work { position: relative; height: 420vh; background: var(--ink-50); }
+  .pin { position: sticky; top: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+  .stage {
+    position: absolute; inset: 0; background: var(--stage); color: var(--stage-text);
+    clip-path: inset(var(--iy, 6vh) var(--ix, 5vw) var(--iy, 6vh) var(--ix, 5vw) round var(--r, 28px));
+    will-change: clip-path;
+  }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+  .intro {
+    position: absolute; left: clamp(1.25rem, 5vw, 4.5rem); top: 50%; margin-top: -7rem;
+    max-width: 27rem; will-change: opacity, transform;
+  }
+  .intro .h2 { color: var(--stage-text); font-size: clamp(2rem, 3.7vw, 3.5rem); line-height: 1.02; letter-spacing: -0.035em; font-weight: 700; }
+  .intro p.sub { margin: 1rem 0 0; color: #a39d94; max-width: 38ch; line-height: 1.55; }
+
+  .reel {
+    position: absolute; right: clamp(1.25rem, 5vw, 4.5rem); top: 50%; transform: translateY(-50%);
+    width: min(30rem, 34vw); list-style: none; margin: 0; padding: 0;
+  }
+  .reel li { border-top: 1px solid rgba(244, 241, 235, .12); padding: 1rem 0; opacity: 0; transform: translateY(12px); transition: opacity .5s ease, transform .5s ease; }
+  .reel.on li { opacity: 1; transform: none; }
+  .reel li:nth-child(2) { transition-delay: .06s } .reel li:nth-child(3) { transition-delay: .12s } .reel li:nth-child(4) { transition-delay: .18s }
+  .reel li:last-child { border-bottom: 1px solid rgba(244, 241, 235, .12); }
+  .reel h3 {
+    margin: 0; display: flex; align-items: center; gap: .8rem;
+    font-family: var(--display); font-weight: 700; letter-spacing: -0.03em;
+    font-size: clamp(1.5rem, 2.6vw, 2.4rem); color: var(--stage-dim); transition: color .35s ease;
+  }
+  .reel h3 .n { font-family: var(--sans); font-size: .8rem; font-weight: 500; letter-spacing: .12em; color: var(--stage-dim); width: 1.9rem; flex: none; transition: color .35s ease; }
+  .reel li.active h3 .n { color: var(--coral); }
+  .reel li.done h3 { color: #9a948b; }
+  .reel .meta { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s ease; color: #b9b3aa; }
+  .reel .meta > div { overflow: hidden; }
+  .reel .meta p { margin: .55rem 0 0 2.7rem; font-size: .98rem; line-height: 1.55; max-width: 36ch; }
+  .reel .meta span { color: var(--stage-dim); }
+  .reel li.active h3 { color: var(--stage-text); }
+  .reel li.active .meta { grid-template-rows: 1fr; }
+
+  .rail { position: absolute; left: clamp(1.25rem, 5vw, 4.5rem); right: clamp(1.25rem, 5vw, 4.5rem); bottom: calc(1.6rem + env(safe-area-inset-bottom, 0px)); height: 1px; background: rgba(244,241,235,.12); }
+  .rail i { position: absolute; inset: 0; background: var(--coral); transform-origin: left; transform: scaleX(0); }
+
+  .outro { position: absolute; left: clamp(1.25rem, 5vw, 4.5rem); bottom: calc(3.4rem + env(safe-area-inset-bottom, 0px)); opacity: 0; transform: translateY(10px); transition: opacity .5s, transform .5s; display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+  .outro.on { opacity: 1; transform: none; }
+  .outro p { margin: 0; color: #b9b3aa; }
+  .btn { font: 500 .95rem var(--sans); background: var(--coral); color: #fff; border: 0; border-radius: 999px; padding: .8rem 1.3rem; cursor: pointer; box-shadow: 0 18px 50px -20px rgba(228,69,50,.6); }
+  .btn:hover { background: #F06251; }
+  .btn:focus-visible { outline: 2px solid var(--stage-text); outline-offset: 3px; }
+
+  .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--stage-dim); font-size: .9rem; transition: opacity .4s; pointer-events: none; }
+
+  /* ---------- mobile ---------- */
+  @media (max-width: 767px) {
+    #work { height: 380vh; }
+    .intro { max-width: none; right: 1.25rem; top: calc(1.5rem + env(safe-area-inset-top, 0px)); margin-top: 0; }
+    .intro p.sub { display: none; }
+    .reel { top: auto; transform: none; bottom: calc(3.2rem + env(safe-area-inset-bottom, 0px)); left: 1.25rem; right: 1.25rem; width: auto; }
+    .reel li { padding: .6rem 0; }
+    .reel h3 { font-size: 1.3rem; }
+    .reel .meta p { font-size: .88rem; margin-left: 2.5rem; }
+    .reel h3 .n { width: 1.7rem; }
+    .outro { bottom: auto; top: calc(1.5rem + env(safe-area-inset-top, 0px)); }
+  }
+
+  /* ---------- reduced motion: static exhibit ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    #work { height: auto; }
+    .pin { position: relative; height: auto; min-height: 100vh; }
+    .stage { position: relative; clip-path: none; min-height: 100vh; }
+    .reel li { opacity: 1; transform: none; }
+    .reel .meta { grid-template-rows: 1fr; }
+    .reel h3 { color: var(--stage-text); }
+    .hint i { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap nav">
+  <div class="brand">KVM<b>verse</b></div>
+  <small>Preview of the Process section</small>
+</header>
+
+<section class="ctx">
+  <div class="wrap">
+    <p class="eyebrow">Services</p>
+    <h2 class="h2">Three lanes. Zero fluff.</h2>
+    <p class="lede">This stands in for the end of your Services section. Scroll down into Process, then keep scrolling to walk through the four steps as the laptop comes apart. Scroll back up to put it together again.</p>
+    <div class="hint"><i></i> Scroll</div>
+  </div>
+</section>
+
+<section id="work" aria-label="How we work">
+  <div class="pin">
+    <div class="stage" id="stage">
+      <canvas id="seq" aria-hidden="true"></canvas>
+      <div class="loading" id="loading">Loading frames…</div>
+
+      <div class="intro" id="intro">
+        <p class="eyebrow">How we work</p>
+        <h2 class="h2">Discover. Design. Build. Ship.</h2>
+        <p class="sub">A short loop with real checkpoints — no mystery phase, no endless discovery theater.</p>
+      </div>
+
+      <ul class="reel" id="reel">
+        <li><h3><span class="n">01</span>Discover</h3><div class="meta"><div><p>We dig into the problem, the users, and the constraints - no fake workshops, just clarity.</p></div></div></li>
+        <li><h3><span class="n">02</span>Design</h3><div class="meta"><div><p>Flows, systems, and interfaces that feel inevitable. Prototype early. Kill weak ideas fast.</p></div></div></li>
+        <li><h3><span class="n">03</span>Build</h3><div class="meta"><div><p>Clean architecture, typed code, real shipping cadence. You see progress weekly, not quarterly.</p></div></div></li>
+        <li><h3><span class="n">04</span>Ship</h3><div class="meta"><div><p>Launch, measure, iterate. We don't ghost after deploy - we make sure it sticks.</p></div></div></li>
+      </ul>
+
+      <div class="outro" id="outro">
+        <p>Four steps, one team, no handoffs.</p>
+        <button class="btn" type="button">Start a project</button>
+      </div>
+
+      <div class="rail"><i id="rail"></i></div>
+    </div>
+  </div>
+</section>
+
+<section class="ctx">
+  <div class="wrap">
+    <p class="eyebrow">Selected work</p>
+    <h2 class="h2">Things we've put into the world.</h2>
+    <p class="lede">The page carries on normally once the sequence ends. This stands in for your Work section, which keeps its project cards.</p>
+  </div>
+</section>
+
+<script>
+// In the real site, frames load from /work-frames/desktop|mobile/0001.webp …
+const FRAMES = [];
+
+(() => {
+  const work = document.getElementById('work');
+  const stage = document.getElementById('stage');
+  const canvas = document.getElementById('seq');
+  const ctx = canvas.getContext('2d');
+  const intro = document.getElementById('intro');
+  const reel = document.getElementById('reel');
+  const items = [...reel.children];
+  const outro = document.getElementById('outro');
+  const rail = document.getElementById('rail');
+  const loading = document.getElementById('loading');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const BG = '#0a0a0c';
+
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const range = (p, a, b) => clamp((p - a) / (b - a));
+
+  // Preload
+  const imgs = FRAMES.map(src => { const i = new Image(); i.decoding = 'async'; i.src = src; return i; });
+  let loaded = 0;
+  imgs.forEach(i => { const done = () => { if (++loaded === imgs.length) loading.style.opacity = 0; }; i.complete ? done() : (i.onload = done, i.onerror = done); });
+
+  let shown = -1, shownCx = -1, target = 0, current = 0, lastW = 0, lastH = 0, cxDesk = 0.62;
+
+  function fadeEdges(x, y, dw, dh) {
+    const f = Math.min(dw, dh) * 0.12;
+    const edges = [
+      [x, y, x, y + f, x, y, dw, f],
+      [x, y + dh, x, y + dh - f, x, y + dh - f, dw, f],
+      [x, y, x + f, y, x, y, f, dh],
+      [x + dw, y, x + dw - f, y, x + dw - f, y, f, dh],
+    ];
+    for (const [x0, y0, x1, y1, rx, ry, rw, rh] of edges) {
+      const g = ctx.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, BG); g.addColorStop(1, 'rgba(10,10,12,0)');
+      ctx.fillStyle = g; ctx.fillRect(rx, ry, rw, rh);
+    }
+  }
+
+  function draw(idx, force) {
+    const img = imgs[idx];
+    if (!img || !img.complete || !img.naturalWidth) return;
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (w !== lastW || h !== lastH) { canvas.width = w * dpr; canvas.height = h * dpr; lastW = w; lastH = h; force = true; }
+    const mobile = w < 768;
+    const cxf = mobile ? 0.5 : cxDesk;
+    if (idx === shown && Math.abs(cxf - shownCx) < 0.0005 && !force) return;
+    shown = idx; shownCx = cxf;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = BG; ctx.fillRect(0, 0, w, h);
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    // Desktop: fit the whole frame, laptop slides left when the project list arrives.
+    // Mobile: zoom so the laptop fills the width, sitting in the upper half.
+    const s = mobile ? Math.max(w * 1.75 / iw, h * 0.5 / ih) : Math.min(w / iw, h / ih) * 0.98;
+    const dw = iw * s, dh = ih * s;
+    const x = w * cxf - dw / 2, y = h * (mobile ? 0.44 : 0.5) - dh / 2;
+    ctx.drawImage(img, x, y, dw, dh);
+    fadeEdges(x, y, dw, dh);
+  }
+
+  function progress() {
+    const r = work.getBoundingClientRect();
+    const total = r.height - innerHeight;
+    return { p: clamp(-r.top / total), enter: clamp(1 - r.top / innerHeight) };
+  }
+
+  function update() {
+    const { p, enter } = progress();
+
+    // 1. Stage opens from an inset card to full bleed as it arrives
+    const e = range(enter, 0.35, 1);
+    stage.style.setProperty('--ix', ((1 - e) * 5) + 'vw');
+    stage.style.setProperty('--iy', ((1 - e) * 6) + 'vh');
+    stage.style.setProperty('--r', ((1 - e) * 28) + 'px');
+
+    // 2. Frames: the laptop comes apart across most of the scroll
+    target = range(p, 0.04, 0.9) * (imgs.length - 1);
+
+    // Laptop slides from right-of-centre to the left as the list comes in
+    const slide = range(p, 0.16, 0.3);
+    const ease = slide * slide * (3 - 2 * slide);
+    cxDesk = 0.62 - 0.24 * ease;
+
+    // 3. Heading fades up and out
+    const out = range(p, 0.14, 0.24);
+    intro.style.opacity = 1 - out;
+    intro.style.transform = `translateY(${-out * 30}px)`;
+
+    // 4. Project list appears, one highlighted at a time
+    reel.classList.toggle('on', p > 0.22);
+    const active = p < 0.26 ? -1 : Math.min(items.length - 1, Math.floor(range(p, 0.26, 0.9) * items.length));
+    items.forEach((li, i) => { li.classList.toggle('active', i === active); li.classList.toggle('done', i < active); });
+
+    outro.classList.toggle('on', p > 0.93);
+    rail.style.transform = `scaleX(${p})`;
+  }
+
+  // Smooth "scrub": ease the drawn frame toward the scroll target
+  function tick() {
+    current += (target - current) * 0.18;
+    if (Math.abs(target - current) < 0.01) current = target;
+    draw(Math.round(current));
+    requestAnimationFrame(tick);
+  }
+
+  if (reduced) {
+    const last = imgs[imgs.length - 1];
+    const paint = () => { draw(imgs.length - 1, true); };
+    last.complete ? paint() : last.addEventListener('load', paint);
+    reel.classList.add('on');
+    addEventListener('resize', paint);
+    return;
+  }
+
+  imgs[0].complete ? draw(0, true) : imgs[0].addEventListener('load', () => draw(0, true));
+  addEventListener('scroll', update, { passive: true });
+  addEventListener('resize', () => { update(); draw(Math.round(current), true); });
+  update();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
